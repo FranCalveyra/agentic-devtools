@@ -1,0 +1,42 @@
+[project]
+name = "agentic-devtools"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "langchain",
+    "langgraph",
+    "langchain-openai",
+    "chromadb",
+    "tiktoken",
+    "ruff",
+    "pytest",
+    "pydantic",
+    "langchain-anthropic>=1.3.3",
+    "langchain-ollama",
+]
+
+[dependency-groups]
+dev = [
+    "mypy >= 1.10.0",
+    "pre-commit>=4.5.1",
+    "typing-extensions",
+]
+
+[tool.mypy]
+python_version = "3.12"
+strict = true
+ignore_missing_imports = true
+plugins = ["pydantic.mypy"]
+
+[[tool.mypy.overrides]]
+module = "langchain.*"
+ignore_missing_imports = true
+
+[tool.ruff]
+target-version = "py312"
+line-length = 88
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP"]
