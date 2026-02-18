@@ -1,4 +1,4 @@
-from environment import Environment
+from config.environment import Environment
 
 
 class Config:
