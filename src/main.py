@@ -1,4 +1,6 @@
-from langchain_core.messages import AIMessage, ToolMessage
+from uuid import uuid4
+
+from langchain_core.messages import AIMessage, HumanMessage, ToolMessage
 
 from agent.agent import agent
 
@@ -45,9 +47,12 @@ def _format_response(result: dict) -> str:
 
 
 def main() -> None:
+    thread_id = str(uuid4())
     print(BANNER)
+    print(f"Session ID: {thread_id}")
+    print()
 
-    history: list[dict] = []
+    config = {"configurable": {"thread_id": thread_id}}
 
     while True:
         user_text = _read_user_input()
@@ -55,10 +60,8 @@ def main() -> None:
             print("\nBye!")
             break
 
-        history.append({"role": "user", "content": user_text})
-
         try:
-            result = agent.invoke({"messages": history})
+            result = agent.invoke({"messages": [HumanMessage(user_text)]}, config)
         except Exception as exc:
             print(f"\n⚠  Agent error: {exc}\n")
             continue
@@ -66,10 +69,6 @@ def main() -> None:
         print(f"\n{SEPARATOR}")
         print(_format_response(result))
         print(SEPARATOR)
-
-        for msg in result.get("messages", []):
-            if isinstance(msg, AIMessage) and msg.content:
-                history.append({"role": "assistant", "content": msg.content})
 
 
 if __name__ == "__main__":

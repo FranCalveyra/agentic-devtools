@@ -1,5 +1,8 @@
-from langchain.agents import create_agent
+from langchain_core.messages import SystemMessage
 from langchain_ollama import ChatOllama
+from langgraph.checkpoint.memory import MemorySaver
+from langgraph.graph import END, MessagesState, StateGraph
+from langgraph.prebuilt import ToolNode
 
 from agent.tools import AGENT_TOOLS
 
@@ -41,10 +44,23 @@ You analyse, lint, format, refactor, and test Python code the user provides.
 - When the user supplies no code, ask for it before calling any tool.
 """
 
-# We'll start with an Ollama model for developing purposes
-llm = ChatOllama(model="llama3.1", temperature=0.5)
-agent = create_agent(
-    model=llm,
-    tools=AGENT_TOOLS,
-    system_prompt=SYSTEM_PROMPT,
-)
+_llm_with_tools = ChatOllama(model="llama3.1", temperature=0.5).bind_tools(AGENT_TOOLS)
+
+
+def _orchestrator(state: MessagesState) -> dict:
+    messages = [SystemMessage(SYSTEM_PROMPT)] + state["messages"]
+    return {"messages": [_llm_with_tools.invoke(messages)]}
+
+
+def _should_continue(state: MessagesState) -> str:
+    return "tools" if state["messages"][-1].tool_calls else END
+
+
+_graph = StateGraph(MessagesState)
+_graph.add_node("orchestrator", _orchestrator)
+_graph.add_node("tools", ToolNode(AGENT_TOOLS))
+_graph.set_entry_point("orchestrator")
+_graph.add_conditional_edges("orchestrator", _should_continue)
+_graph.add_edge("tools", "orchestrator")
+
+agent = _graph.compile(checkpointer=MemorySaver())
