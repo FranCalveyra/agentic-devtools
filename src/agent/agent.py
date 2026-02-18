@@ -49,12 +49,12 @@ You analyse, lint, format, refactor, and test Python code the user provides.
 - When the user supplies no code, ask for it before calling any tool.
 """
 
-_llm_with_tools = ChatOllama(model="llama3.1", temperature=0.5).bind_tools(AGENT_TOOLS)
+_llm = ChatOllama(model="llama3.1", temperature=0.5).bind_tools(AGENT_TOOLS)
 
 
 def _orchestrator(state: MessagesState) -> dict:
     messages = [SystemMessage(SYSTEM_PROMPT)] + state["messages"]
-    return {"messages": [_llm_with_tools.invoke(messages)]}
+    return {"messages": [_llm.invoke(messages)]}
 
 
 def _should_continue(state: MessagesState) -> str:
