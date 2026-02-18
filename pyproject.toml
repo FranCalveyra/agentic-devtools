@@ -15,6 +15,10 @@ dependencies = [
     "pydantic",
     "langchain-anthropic>=1.3.3",
     "langchain-ollama",
+    "sentence-transformers>=5.2.3",
+    "dotenv>=0.9.9",
+    "langchain-community>=0.4.1",
+    "langchain-huggingface>=1.2.0",
 ]
 
 [dependency-groups]
